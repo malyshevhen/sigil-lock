@@ -91,7 +91,7 @@ defmodule SigilLockWeb.Plugs.Authenticate do
     end
   end
 
-  @spec get_jwk(list(), binary()) :: map()
+  @spec get_jwk(list(), binary()) :: map() | nil
   defp get_jwk(keys, alg) when is_list(keys) and is_binary(alg) do
     Enum.find(keys, fn key -> key["alg"] == alg end)
   end

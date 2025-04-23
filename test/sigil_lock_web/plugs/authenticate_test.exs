@@ -16,7 +16,7 @@ defmodule SigilLockWeb.Plugs.AuthenticateTest do
     # Use a case statement to handle the potential error from generate_key
     jwk =
       JWK.generate_key({:rsa, 2048})
-      |> JWK.merge(%{"kid" => "test-key-id"})
+      |> JWK.merge(%{"kid" => "test-key-id", "alg" => "RS256"})
 
     jws = JWS.from_map(%{"alg" => "RS256", "typ" => "JWT"})
 
