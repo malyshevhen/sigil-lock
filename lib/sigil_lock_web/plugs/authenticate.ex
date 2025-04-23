@@ -69,8 +69,11 @@ defmodule SigilLockWeb.Plugs.Authenticate do
     with {:ok, jwks_list} <- @keycloak_client.fetch_jwks() do
       Logger.info("Authenticate Plug: JWK fetched successfully")
 
+      # Get the JWK with the given algorithm
+      jwk = get_jwk(jwks_list, "RS256")
+
       # Create a Joken.Signer from the JWK map
-      signer = Joken.Signer.create("RS256", List.first(jwks_list))
+      signer = Joken.Signer.create("RS256", jwk)
 
       # Verify the token using the created signer
       with {:ok, claims} <- Joken.verify(token, signer) do
@@ -86,5 +89,10 @@ defmodule SigilLockWeb.Plugs.Authenticate do
         Logger.error("Authenticate Plug: Failed to fetch JWK: #{inspect(reason)}")
         {:error, :unauthenticated}
     end
+  end
+
+  @spec get_jwk(list(), binary()) :: map()
+  defp get_jwk(keys, alg) when is_list(keys) and is_binary(alg) do
+    Enum.find(keys, fn key -> key["alg"] == alg end)
   end
 end

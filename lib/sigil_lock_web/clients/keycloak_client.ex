@@ -14,7 +14,6 @@ defmodule SigilLockWeb.Clients.KeycloakClient do
     case Req.get(@jwks_uri) do
       {:ok, %{status: 200, body: %{"keys" => jwks_list}}} when is_list(jwks_list) ->
         Logger.info("JWKS fetched successfully")
-
         {:ok, jwks_list}
 
       {:ok, %{status: status, body: body}} ->

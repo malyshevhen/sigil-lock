@@ -14,13 +14,7 @@ defmodule SigilLockWeb.Router do
   # Pipeline for authenticated API requests
   pipeline :authenticated_api do
     # Add the authentication plug
-    plug :call, SigilLockWeb.Plugs.Authenticate
-    plug :accepts, ["json"]
-
-    plug Plug.Parsers,
-      parsers: [:urlencoded, :multipart, :json],
-      pass: ["*/*"],
-      json_decoder: Jason
+    plug SigilLockWeb.Plugs.Authenticate
   end
 
   # API scope

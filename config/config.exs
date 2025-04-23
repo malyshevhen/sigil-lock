@@ -42,7 +42,7 @@ config :phoenix, :json_library, Jason
 config :sigil_lock,
   jwks_uri:
     System.get_env("KEYCLOAK_JWKS_URI") ||
-      "http://localhost:8080/realms/sigil-lock-api/protocol/openid-connect/certs"
+      "http://localhost:8080/realms/sigil-lock/protocol/openid-connect/certs"
 
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.
