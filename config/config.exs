@@ -10,6 +10,20 @@ import Config
 config :sigil_lock,
   generators: [timestamp_type: :utc_datetime]
 
+config :sigil_lock,
+  ecto_repos: [SigilLock.Repo]
+
+# Configures the repository
+config :sigil_lock, SigilLock.Repo,
+  hostname: System.get_env("APP_POSTGRES_HOST", "localhost"),
+  username: System.get_env("APP_POSTGRES_USER", "sigil_lock"),
+  password: System.get_env("APP_POSTGRES_PASSWORD", "password"),
+  database: System.get_env("APP_POSTGRES_DB", "sigil_lock"),
+  port: System.get_env("APP_POSTGRES_PORT", "5432"),
+  ssl: String.to_existing_atom(System.get_env("APP_POSTGRES_SSL", "false")),
+  ssl_opts: [],
+  show_sensitive_data_on_connection_error: true
+
 # Configures the endpoint
 config :sigil_lock, SigilLockWeb.Endpoint,
   url: [host: "localhost"],
@@ -40,9 +54,7 @@ config :phoenix, :json_library, Jason
 
 # Configure the JWKS URL for token verification
 config :sigil_lock,
-  jwks_uri:
-    System.get_env("KEYCLOAK_JWKS_URI") ||
-      "http://localhost:8080/realms/sigil-lock/protocol/openid-connect/certs"
+  jwks_uri: System.get_env("KC_JWKS_URI", "")
 
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.

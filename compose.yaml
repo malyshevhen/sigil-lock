@@ -6,34 +6,31 @@ services:
     container_name: keycloak-sigil-lock
     environment:
       # --- Keycloak Admin Credentials (for the master realm) ---
-      KC_BOOTSTRAP_ADMIN_USERNAME: admin # CHANGE THIS for production
-      KC_BOOTSTRAP_ADMIN_PASSWORD: admin # CHANGE THIS for production
+      KC_BOOTSTRAP_ADMIN_USERNAME: ${KC_BOOTSTRAP_ADMIN_USERNAME} # CHANGE THIS for production
+      KC_BOOTSTRAP_ADMIN_PASSWORD: ${KC_BOOTSTRAP_ADMIN_PASSWORD} # CHANGE THIS for production
       # --- Database Configuration (Using PostgreSQL) ---
-      KC_DB: postgres
-      KC_DB_URL_HOST: kc-postgres # Service name of the postgres container
-      KC_DB_URL_PORT: 5432 # Default postgres port
-      KC_DB_DATABASE: keycloak # Must match POSTGRES_DB in postgres service
-      KC_DB_USERNAME: keycloak # Must match POSTGRES_USER in postgres service
-      KC_DB_PASSWORD: password # Must match POSTGRES_PASSWORD in postgres service
-      KC_DB_SCHEMA: public
+      KC_DB: ${KC_DB}
+      KC_DB_URL_HOST: ${KC_DB_URL_HOST} # Service name of the postgres container
+      KC_DB_URL_PORT: ${KC_DB_URL_PORT} # Default postgres port
+      KC_DB_DATABASE: ${KC_DB_DATABASE} # Must match POSTGRES_DB in postgres service
+      KC_DB_USERNAME: ${KC_DB_USERNAME} # Must match POSTGRES_USER in postgres service
+      KC_DB_PASSWORD: ${KC_DB_PASSWORD} # Must match POSTGRES_PASSWORD in postgres service
+      KC_DB_SCHEMA: ${KC_DB_SCHEMA}
       # --- HTTP/HTTPS Configuration (for local development) ---
-      KC_HTTP_ENABLED: "true"
-      KC_HOSTNAME_STRICT: "false"
-      KC_HOSTNAME_STRICT_HTTPS: "false"
-      KC_PROXY: edge
+      KC_HTTP_ENABLED: ${KC_HTTP_ENABLED}
+      KC_HOSTNAME_STRICT: ${KC_HOSTNAME_STRICT}
+      KC_HOSTNAME_STRICT_HTTPS: ${KC_HOSTNAME_STRICT_HTTPS}
+      KC_PROXY: ${KC_PROXY}
     ports:
-      - "8080:8080"
-      - "8443:8443"
+      - "${KC_PORT_HTTP}:8080"
+      - "${KC_PORT_HTTPS}:8443"
     volumes:
       # Mount the realm config for import on first start
-      - ./realm-config.json:/opt/keycloak/data/import/realm-config.json:z
+      - ${KC_REALM_CONFIG_PATH}:/opt/keycloak/data/import/realm-config.json:z
     command:
       # Start Keycloak (not -dev mode when using external DB usually) and import
       - start
       - --import-realm
-    networks:
-      - sigil-lock-network
-
     depends_on:
       - kc-postgres # Ensure postgres starts before keycloak
 
@@ -41,43 +38,25 @@ services:
     image: postgres:15 # Use a specific version
     container_name: postgres-sigil-lock
     volumes:
-      - postgres_data:/var/lib/postgresql/data:z # Persist PostgreSQL data
+      - kc_postgres_data:/var/lib/postgresql/data:z # Persist PostgreSQL data
     environment:
-      POSTGRES_DB: keycloak # Database name for Keycloak
-      POSTGRES_USER: keycloak # Database user for Keycloak
-      POSTGRES_PASSWORD: password # Database password for Keycloak
-    networks:
-      - sigil-lock-network
-  
-  pgadmin:
-    image: dpage/pgadmin4:latest
-    restart: always
-    environment:
-      PGADMIN_DEFAULT_EMAIL: admin@example.com
-      PGADMIN_DEFAULT_PASSWORD: pgadminpassword
-      PGADMIN_CONFIG_SERVER_MODE: 'False'
-    volumes:
-      - pgadmin_data:/var/lib/pgadmin
-    ports:
-      - "5050:80"
-    networks:
-      - sigil-lock-network
-    depends_on:
-      - kc-postgres
+      POSTGRES_DB: ${KC_DB_DATABASE} # Database name for Keycloak
+      POSTGRES_USER: ${KC_DB_USERNAME} # Database user for Keycloak
+      POSTGRES_PASSWORD: ${KC_DB_PASSWORD} # Database password for Keycloak
 
-  sigil-lock-postgres:
+  app-postgres:
     image: postgres:15 # Use a specific version
     container_name: sigil-lock-postgres
     volumes:
-      - sigil_lock_postgres_data:/var/lib/postgresql/data:z # Persist PostgreSQL data
+      - app_postgres_data:/var/lib/postgresql/data:z # Persist PostgreSQL data
     environment:
-      POSTGRES_DB: sigil_lock # Database name for Sigil Lock
-      POSTGRES_USER: sigil_lock # Database user for Sigil Lock
-      POSTGRES_PASSWORD: password # Database password for Sigil Lock
+      POSTGRES_DB: ${APP_POSTGRES_DB} # Database name for Sigil Lock
+      POSTGRES_USER: ${APP_POSTGRES_USER} # Database user for Sigil Lock
+      POSTGRES_PASSWORD: ${APP_POSTGRES_PASSWORD} # Database password for Sigil Lock
     ports:
-      - "5432:5432"
+      - "${APP_POSTGRES_PORT}:5432"
 
 # Define named volumes
 volumes:
-  postgres_data: {} # Volume for PostgreSQL data persistence
-  pgadmin_data: {} # Volume for pgAdmin data persistence
+  kc_postgres_data: {} # Volume for PostgreSQL data persistence
+  app_postgres_data: {} # Volume for PostgreSQL data persistence for Sigil Lock

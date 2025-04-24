@@ -7,6 +7,20 @@ config :sigil_lock, SigilLockWeb.Endpoint,
   secret_key_base: "cy/J2BpPMJTrzzpTNfu3Jd8vNEZNJ3KTCFw++zTwb5kymAb4grVUB32hojxELIUg",
   server: false
 
+# Repo configuration
+config :sigil_lock, SigilLock.Repo,
+  hostname: "localhost",
+  username: System.get_env("APP_POSTGRES_USER", "sigil_lock"),
+  password: System.get_env("APP_POSTGRES_PASSWORD", "password"),
+  database: System.get_env("APP_POSTGRES_DB", "sigil_lock"),
+  port: 5432,
+  ssl: false,
+  # ssl_opts: [],
+  show_sensitive_data_on_connection_error: true,
+  # Use sandbox for tests
+  pool: Ecto.Adapters.SQL.Sandbox,
+  pool_size: 10
+
 # In test we don't send emails
 config :sigil_lock, SigilLock.Mailer, adapter: Swoosh.Adapters.Test
 

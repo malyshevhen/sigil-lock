@@ -66,7 +66,7 @@ defmodule SigilLock.Identity do
       ...>   "jti" => "jwt-id-456",
       ...>   "exp" => trunc(DateTime.to_unix(DateTime.utc_now()) + 3600) # Expires in 1 hour
       ...> }
-      iex> {:ok, identity} = SigilLock.Domain.Identity.from_claims(claims)
+      iex> {:ok, identity} = SigilLock.Identity.from_claims(claims)
       iex> identity.username
       "alice"
       iex> identity.roles
@@ -74,10 +74,10 @@ defmodule SigilLock.Identity do
       iex> DateTime.compare(identity.expires_at, DateTime.utc_now())
       :gt
 
-      iex> SigilLock.Domain.Identity.from_claims(%{"email" => "missing_other_fields@example.com"})
+      iex> SigilLock.Identity.from_claims(%{"email" => "missing_other_fields@example.com"})
       {:error, {:missing_claim, "preferred_username"}}
 
-      iex> SigilLock.Domain.Identity.from_claims(%{
+      iex> SigilLock.Identity.from_claims(%{
       ...>   "preferred_username" => "alice",
       ...>   "email" => "alice@example.com",
       ...>   "email_verified" => "not_a_boolean", # Invalid type

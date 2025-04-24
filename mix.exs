@@ -48,7 +48,8 @@ defmodule SigilLock.MixProject do
       {:joken, "~> 2.6"},
       {:jose, "~> 1.11"},
       {:mock, "~> 0.3.9", only: :test},
-      {:mox, "~> 1.2", only: :test}
+      {:mox, "~> 1.2", only: :test},
+      {:dotenvy, "~> 1.1"}
     ]
   end
 
@@ -60,7 +61,10 @@ defmodule SigilLock.MixProject do
   # See the documentation for `Mix` for more info on aliases.
   defp aliases do
     [
-      setup: ["deps.get"]
+      setup: ["deps.get", "ecto.setup"],
+      "ecto.setup": ["ecto.create", "ecto.migrate", "run priv/repo/seeds.exs"],
+      "ecto.reset": ["ecto.drop", "ecto.setup"],
+      test: ["ecto.create --quiet", "ecto.migrate --quiet", "test"]
     ]
   end
 end

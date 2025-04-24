@@ -1,9 +1,9 @@
 defmodule SigilLock.Domain.IdentityTest do
   use ExUnit.Case, async: true
-  doctest SigilLock.Domain.Identity
+  doctest SigilLock.Identity
 
   # Import the module under test
-  alias SigilLock.Domain.Identity
+  alias SigilLock.Identity
 
   # --- Test Data ---
   # Helper function to create a base set of valid claims
