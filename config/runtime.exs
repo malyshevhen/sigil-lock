@@ -1,4 +1,22 @@
 import Config
+import Dotenvy
+
+env_dir_prefix = System.get_env("RELEASE_ROOT") || "."
+
+source!([
+  Path.absname(".env", env_dir_prefix)
+])
+
+# Configures the repository
+config :sigil_lock, SigilLock.Repo,
+  hostname: env!("APP_POSTGRES_HOST") |> dbg(),
+  username: env!("APP_POSTGRES_USER") |> dbg(),
+  password: env!("APP_POSTGRES_PASSWORD") |> dbg(),
+  database: env!("APP_POSTGRES_DB") |> dbg(),
+  port: env!("APP_POSTGRES_PORT", :string) |> dbg(),
+  ssl: false,
+  ssl_opts: [],
+  show_sensitive_data_on_connection_error: true
 
 # config/runtime.exs is executed for all environments, including
 # during releases. It is executed after compilation and before the

@@ -7,13 +7,6 @@ defmodule SigilLock.Application do
 
   @impl true
   def start(_type, _args) do
-    Dotenvy.source([
-      ".env",
-      ".env.#{Mix.env()}",
-      ".env.local",
-      ".env.#{Mix.env()}.local"
-    ])
-
     children = [
       SigilLockWeb.Telemetry,
       SigilLock.Repo,
