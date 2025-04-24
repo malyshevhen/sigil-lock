@@ -107,22 +107,116 @@ defmodule SigilLock.Domain.Identity do
          # Fetch and convert expiration time
          {:ok, expires_at} <- fetch_datetime(claims, "exp") do
       # If all steps in `with` succeed, build the struct
-      identity = %__MODULE__{
-        username: username,
-        email: email,
-        email_verified: email_verified,
-        roles: roles,
-        audience: audience,
-        issuer: issuer,
-        subject: subject,
-        jti: jti,
-        expires_at: expires_at
-      }
+      identity =
+        struct(__MODULE__, %{
+          username: username,
+          email: email,
+          email_verified: email_verified,
+          roles: roles,
+          audience: audience,
+          issuer: issuer,
+          subject: subject,
+          jti: jti,
+          expires_at: expires_at
+        })
 
-      {:ok, identity}
+      case validate(identity) do
+        {:ok, _} -> {:ok, identity}
+        {:error, reason} -> {:error, reason}
+      end
     else
       # Handle errors from any step in the `with` block
       {:error, reason} -> {:error, reason}
+    end
+  end
+
+  def is_verified?(%__MODULE__{email_verified: true}), do: true
+  def is_verified?(%__MODULE__{email_verified: _}), do: false
+
+  def is_expired?(%__MODULE__{expires_at: expires_at}),
+    do: DateTime.compare(expires_at, DateTime.utc_now()) == :lt
+
+  def validate(
+        %__MODULE__{
+          username: username,
+          email: email,
+          email_verified: email_verified,
+          roles: roles,
+          audience: audience,
+          issuer: issuer,
+          subject: subject,
+          expires_at: _expires_at
+        } = identity
+      )
+      when is_binary(username) and is_binary(email) and
+             is_boolean(email_verified) and is_list(roles) and
+             is_binary(issuer) and is_binary(subject) do
+    with {:ok, _} <- validate_username(username),
+         {:ok, _} <- validate_email(email),
+         {:ok, _} <- validate_email_verification(identity),
+         {:ok, _} <- validate_roles(roles),
+         {:ok, _} <- validate_audience(audience),
+         {:ok, _} <- validate_expiration(identity) do
+      {:ok, identity}
+    end
+  end
+
+  def validate(_), do: {:error, :invalid_identity_structure}
+
+  # Individual validation functions
+  defp validate_username(username) do
+    if username |> String.trim() |> String.length() > 0 do
+      {:ok, username}
+    else
+      {:error, {:invalid_username, "Username cannot be empty"}}
+    end
+  end
+
+  defp validate_email(email) do
+    if valid_email?(email) do
+      {:ok, email}
+    else
+      {:error, {:invalid_email, "Email format is invalid"}}
+    end
+  end
+
+  defp validate_email_verification(identity) do
+    if is_verified?(identity) do
+      {:ok, true}
+    else
+      {:error, {:email_not_verified, "Email must be verified"}}
+    end
+  end
+
+  defp validate_roles(roles) do
+    if Enum.all?(roles, &is_binary/1) do
+      {:ok, roles}
+    else
+      {:error, {:invalid_roles, "All roles must be strings"}}
+    end
+  end
+
+  defp validate_audience(audience) when is_binary(audience) do
+    if audience == "" do
+      {:error, {:invalid_audience, "Audience cannot be empty"}}
+    else
+      {:ok, audience}
+    end
+  end
+
+  defp validate_audience(audience) when is_list(audience) do
+    if Enum.all?(audience, &is_binary/1) do
+      {:ok, audience}
+    else
+      {:error, {:invalid_audience, "All audience entries must be strings"}}
+    end
+  end
+
+  defp validate_expiration(identity) do
+    if not is_expired?(identity) do
+      {:ok, true}
+    else
+      {:error, {:expired, "Identity has expired"}}
     end
   end
 
@@ -209,4 +303,8 @@ defmodule SigilLock.Domain.Identity do
 
   defp validate_optional_string(_value, key),
     do: {:error, {:invalid_type, key, "Expected string or nil"}}
+
+  defp valid_email?(email) do
+    Regex.match?(~r/\A[\w+\-.]+@[a-z\d\-]+(\.[a-z\d\-]+)*\.[a-z]+\z/i, email)
+  end
 end
