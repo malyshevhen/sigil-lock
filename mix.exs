@@ -33,6 +33,9 @@ defmodule SigilLock.MixProject do
   # Type `mix help deps` for examples and options.
   defp deps do
     [
+      {:phoenix_ecto, "~> 4.5"},
+      {:ecto_sql, "~> 3.10"},
+      {:postgrex, ">= 0.0.0"},
       {:phoenix, "~> 1.8.0-rc.0", override: true},
       {:phoenix_live_dashboard, "~> 0.8.3"},
       {:swoosh, "~> 1.16"},

@@ -9,6 +9,7 @@ defmodule SigilLock.Application do
   def start(_type, _args) do
     children = [
       SigilLockWeb.Telemetry,
+      SigilLock.Repo,
       {DNSCluster, query: Application.get_env(:sigil_lock, :dns_cluster_query) || :ignore},
       {Phoenix.PubSub, name: SigilLock.PubSub},
       # Start a worker by calling: SigilLock.Worker.start_link(arg)
