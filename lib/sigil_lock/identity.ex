@@ -1,4 +1,4 @@
-defmodule SigilLock.Domain.Identity do
+defmodule SigilLock.Identity do
   @moduledoc """
   Represents a validated user identity derived from JWT claims.
 
